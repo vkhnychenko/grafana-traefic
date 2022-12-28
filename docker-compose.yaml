@@ -1,0 +1,31 @@
+version: "3.9"
+
+networks:
+  proxy:
+    external: true
+
+services:
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:9.3.2-ubuntu
+    #ports:
+      #- "3000:3000"
+    volumes:
+      - data:/var/lib/grafana
+      - configs:/etc/grafana
+    restart: unless-stopped
+    networks:
+      - proxy
+      - default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.grafana-secure.entrypoints=web,websecure"
+      - "traefik.http.routers.grafana-secure.rule=Host(`${HOST}`)"
+      - "traefik.http.routers.grafana-secure.service=grafana-service"
+      - "traefik.http.routers.grafana-secure.tls=true"
+      - "traefik.http.routers.grafana-secure.tls.certresolver=production"
+      - "traefik.http.services.grafana-service.loadbalancer.server.port=3000"
+volumes:
+  data:
+  configs:
